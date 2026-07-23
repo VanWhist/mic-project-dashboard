@@ -171,10 +171,108 @@
     margin-top: 24px;
     padding: 0 20px;
   }
+  .progress-badge {
+    font-size: 11px;
+    color: var(--sub);
+    background: var(--gray-bg);
+    border-radius: 999px;
+    padding: 2px 9px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .progress-bar-track {
+    height: 5px;
+    border-radius: 3px;
+    background: #eef0f2;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 3px;
+  }
+  .wait-reason {
+    display: inline-block;
+    font-size: 11.5px;
+    color: #92400e;
+    background: #fef3c7;
+    border-radius: 6px;
+    padding: 1px 7px;
+    margin-left: 4px;
+  }
+  details.done-details {
+    margin-top: 4px;
+  }
+  details.done-details > summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--sub);
+    list-style: none;
+  }
+  details.done-details > summary::-webkit-details-marker { display: none; }
+  details.done-details > summary::before {
+    content: "▸ ";
+  }
+  details.done-details[open] > summary::before {
+    content: "▾ ";
+  }
+  details.done-details ul.task-list {
+    margin-top: 6px;
+  }
+  #summary {
+    max-width: 1200px;
+    margin: 16px auto 0;
+    padding: 0 16px;
+  }
+  .summary-panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .summary-panel h2 {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    color: var(--blue);
+  }
+  ul.summary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ul.summary-list > li {
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  ul.summary-list > li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  ul.summary-list .summary-project {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--blue);
+    background: var(--blue-bg);
+    border-radius: 6px;
+    padding: 1px 7px;
+    margin-bottom: 4px;
+  }
+  ul.summary-list .task-text {
+    display: block;
+  }
+  .summary-empty {
+    font-size: 13px;
+    color: #9ca3af;
+  }
   @media (max-width: 480px) {
     header h1 { font-size: 17px; }
     main { padding: 10px; gap: 12px; }
     .card { padding: 14px; }
+    #summary { padding: 0 10px; }
   }
 </style>
 </head>
@@ -189,6 +287,8 @@
 
 <div id="empty" class="empty-state"></div>
 
+<section id="summary" style="display:none"></section>
+
 <main id="cards"></main>
 
 <footer>PCで「sync.bat」を実行すると最新のタスク.mdの内容がここに反映されます。</footer>
@@ -198,6 +298,7 @@ const refreshBtn = document.getElementById('refreshBtn');
 const statusEl = document.getElementById('status');
 const cardsEl = document.getElementById('cards');
 const emptyEl = document.getElementById('empty');
+const summaryEl = document.getElementById('summary');
 
 refreshBtn.addEventListener('click', scanAndRenderStatic);
 window.addEventListener('DOMContentLoaded', scanAndRenderStatic);
@@ -214,6 +315,38 @@ function mdInlineToHtml(text) {
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
   return s;
+}
+
+// Splits "本文 … 待ち理由" into { main, reason }. Returns reason=null if no split found.
+function splitWaitReason(text) {
+  const idx = text.indexOf('…');
+  if (idx === -1) return { main: text, reason: null };
+  return {
+    main: text.slice(0, idx).trim(),
+    reason: text.slice(idx + 1).trim(),
+  };
+}
+
+function renderTaskItem(item, withWaitReason) {
+  let html = `<li class="${item.done ? 'done' : ''}">`;
+  html += `<span class="check">${item.done ? '✅' : '⬜'}</span>`;
+  html += `<span class="task-text">`;
+  if (withWaitReason) {
+    const { main, reason } = splitWaitReason(item.text);
+    html += mdInlineToHtml(main);
+    if (reason) html += `<span class="wait-reason">⏳ ${mdInlineToHtml(reason)}</span>`;
+  } else {
+    html += mdInlineToHtml(item.text);
+  }
+  if (item.sub.length) {
+    html += '<ul class="sub-list">';
+    for (const s of item.sub) {
+      html += `<li>${mdInlineToHtml(s)}</li>`;
+    }
+    html += '</ul>';
+  }
+  html += '</span></li>';
+  return html;
 }
 
 function parseTasks(md) {
@@ -308,48 +441,96 @@ async function scanAndRenderStatic() {
   }
 }
 
+function renderSummary(projects) {
+  const items = [];
+  for (const p of projects) {
+    const inprogress = p.sections.inprogress || [];
+    for (const item of inprogress) {
+      if (!item.done) items.push({ project: p.title, item });
+    }
+  }
+
+  if (items.length === 0) {
+    summaryEl.innerHTML = `
+      <div class="summary-panel">
+        <h2>🎯 今すぐやるべきこと</h2>
+        <div class="summary-empty">「進行中」の未完了タスクはありません。</div>
+      </div>`;
+    summaryEl.style.display = 'block';
+    return;
+  }
+
+  let html = `<div class="summary-panel"><h2>🎯 今すぐやるべきこと（全プロジェクトの「進行中」未完了タスク）</h2><ul class="summary-list">`;
+  for (const { project, item } of items) {
+    const { main, reason } = splitWaitReason(item.text);
+    html += `<li><span class="summary-project">${escapeHtml(project)}</span><span class="task-text">${mdInlineToHtml(main)}`;
+    if (reason) html += `<span class="wait-reason">⏳ ${mdInlineToHtml(reason)}</span>`;
+    html += `</span></li>`;
+  }
+  html += '</ul></div>';
+  summaryEl.innerHTML = html;
+  summaryEl.style.display = 'block';
+}
+
 function renderCards(projects) {
   cardsEl.innerHTML = '';
   if (projects.length === 0) {
     emptyEl.style.display = 'block';
-    emptyEl.innerHTML = 'まだプロジェクトが同期されていません。PCで sync.bat を実行してください。';
+    emptyEl.innerHTML = 'まだプロジェクトが同期されていません。PCで sync.bat」を実行すると最新のタスク.mdの内容がここに反映されます。';
+    summaryEl.style.display = 'none';
     return;
   }
   emptyEl.style.display = 'none';
 
+  renderSummary(projects);
+
   const sectionsDef = [
-    { key: 'inprogress', label: '🔵 進行中', cls: 'sec-blue' },
-    { key: 'next', label: '🟡 次に着手するもの', cls: 'sec-yellow' },
-    { key: 'pending', label: '⚪ 保留・待ち', cls: 'sec-gray' },
+    { key: 'inprogress', label: '🔵 進行中', cls: 'sec-blue', waitReason: false },
+    { key: 'next', label: '🟡 次に着手するもの', cls: 'sec-yellow', waitReason: false },
+    { key: 'pending', label: '⚪ 保留・待ち', cls: 'sec-gray', waitReason: true },
   ];
 
   for (const p of projects) {
     const card = document.createElement('div');
     card.className = 'card';
+
+    let totalCount = 0;
+    let doneCount = 0;
+    for (const sec of sectionsDef) {
+      const items = p.sections[sec.key] || [];
+      totalCount += items.length;
+      doneCount += items.filter(i => i.done).length;
+    }
+    const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+
     let html = `<h2>${escapeHtml(p.title)}</h2>`;
     html += `<div class="folder-name">${escapeHtml(p.folder)}</div>`;
+    if (totalCount > 0) {
+      html += `<div class="progress-badge">${doneCount}/${totalCount} 完了</div>`;
+      html += `<div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>`;
+    }
 
     for (const sec of sectionsDef) {
       const items = p.sections[sec.key] || [];
+      const notDone = items.filter(i => !i.done);
+      const done = items.filter(i => i.done);
+
       html += `<div class="section ${sec.cls}"><div class="section-title">${sec.label}</div>`;
       if (items.length === 0) {
         html += `<div class="no-items">なし</div>`;
       } else {
-        html += '<ul class="task-list">';
-        for (const item of items) {
-          html += `<li class="${item.done ? 'done' : ''}">`;
-          html += `<span class="check">${item.done ? '✅' : '⬜'}</span>`;
-          html += `<span class="task-text">${mdInlineToHtml(item.text)}`;
-          if (item.sub.length) {
-            html += '<ul class="sub-list">';
-            for (const s of item.sub) {
-              html += `<li>${mdInlineToHtml(s)}</li>`;
-            }
-            html += '</ul>';
-          }
-          html += '</span></li>';
+        if (notDone.length > 0) {
+          html += '<ul class="task-list">';
+          for (const item of notDone) html += renderTaskItem(item, sec.waitReason);
+          html += '</ul>';
+        } else {
+          html += `<div class="no-items">未完了のタスクはありません</div>`;
         }
-        html += '</ul>';
+        if (done.length > 0) {
+          html += `<details class="done-details"><summary>✅ 完了済み（${done.length}件）</summary><ul class="task-list">`;
+          for (const item of done) html += renderTaskItem(item, sec.waitReason);
+          html += '</ul></details>';
+        }
       }
       html += '</div>';
     }
