@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プロジェクト横断ダッシュボード</title>
+<style>
+  :root {
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --yellow: #d97706;
+    --yellow-bg: #fffbeb;
+    --gray: #6b7280;
+    --gray-bg: #f3f4f6;
+    --ink: #1f2937;
+    --sub: #6b7280;
+    --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Segoe UI", sans-serif;
+    background: #f9fafb;
+    color: var(--ink);
+    padding-bottom: 40px;
+  }
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 {
+    font-size: 20px;
+    margin: 0 0 12px 0;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  button {
+    font-size: 14px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  #status {
+    font-size: 12px;
+    color: var(--sub);
+  }
+  main {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .empty-state {
+    max-width: 600px;
+    margin: 60px auto;
+    text-align: center;
+    color: var(--sub);
+    font-size: 15px;
+    line-height: 1.8;
+    padding: 0 20px;
+    display: none;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .card h2 {
+    font-size: 17px;
+    margin: 0 0 2px 0;
+  }
+  .folder-name {
+    font-size: 12px;
+    color: var(--sub);
+  }
+  .updated {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-bottom: 14px;
+  }
+  .section {
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--gray);
+    background: var(--gray-bg);
+  }
+  .section.sec-blue {
+    border-left-color: var(--blue);
+    background: var(--blue-bg);
+  }
+  .section.sec-yellow {
+    border-left-color: var(--yellow);
+    background: var(--yellow-bg);
+  }
+  .section.sec-gray {
+    border-left-color: var(--gray);
+    background: var(--gray-bg);
+  }
+  .section-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .sec-blue .section-title { color: var(--blue); }
+  .sec-yellow .section-title { color: var(--yellow); }
+  .sec-gray .section-title { color: var(--gray); }
+  .no-items {
+    font-size: 12.5px;
+    color: #9ca3af;
+  }
+  ul.task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ul.task-list > li {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  ul.task-list > li.done .task-text {
+    text-decoration: line-through;
+    color: #9ca3af;
+  }
+  .check {
+    flex-shrink: 0;
+  }
+  .task-text {
+    flex: 1;
+  }
+  ul.sub-list {
+    list-style: disc;
+    margin: 4px 0 0 0;
+    padding-left: 18px;
+  }
+  ul.sub-list li {
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.5;
+    margin-bottom: 2px;
+  }
+  code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 24px;
+    padding: 0 20px;
+  }
+  @media (max-width: 480px) {
+    header h1 { font-size: 17px; }
+    main { padding: 10px; gap: 12px; }
+    .card { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📋 プロジェクト横断ダッシュボード</h1>
+  <div class="controls">
+    <button id="refreshBtn">🔄 再読み込み</button>
+    <span id="status">読み込み中…</span>
+  </div>
+</header>
+
+<div id="empty" class="empty-state"></div>
+
+<main id="cards"></main>
+
+<footer>PCで「sync.bat」を実行すると最新のタスク.mdの内容がここに反映されます。</footer>
+
+<script>
+const refreshBtn = document.getElementById('refreshBtn');
+const statusEl = document.getElementById('status');
+const cardsEl = document.getElementById('cards');
+const emptyEl = document.getElementById('empty');
+
+refreshBtn.addEventListener('click', scanAndRenderStatic);
+window.addEventListener('DOMContentLoaded', scanAndRenderStatic);
+
+function escapeHtml(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function mdInlineToHtml(text) {
+  let s = escapeHtml(text);
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return s;
+}
+
+function parseTasks(md) {
+  const lines = md.split(/\r?\n/);
+  const categories = [
+    { key: 'inprogress', match: /進行中/ },
+    { key: 'next', match: /次に着手/ },
+    { key: 'pending', match: /保留/ },
+  ];
+  const result = { inprogress: [], next: [], pending: [] };
+  let current = null;
+  let currentItem = null;
+
+  for (const line of lines) {
+    const headerMatch = line.match(/^#{2,3}\s+(.+)$/);
+    if (headerMatch) {
+      const headerText = headerMatch[1];
+      const cat = categories.find(c => c.match.test(headerText));
+      current = cat ? cat.key : null;
+      currentItem = null;
+      continue;
+    }
+    if (!current) continue;
+
+    const topItemMatch = line.match(/^-\s*\[( |x|X)\]\s+(.+)$/);
+    if (topItemMatch) {
+      currentItem = {
+        done: topItemMatch[1].toLowerCase() === 'x',
+        text: topItemMatch[2].trim(),
+        sub: [],
+      };
+      result[current].push(currentItem);
+      continue;
+    }
+
+    const subMatch = line.match(/^\s{2,}-\s+(.+)$/);
+    if (subMatch && currentItem) {
+      currentItem.sub.push(subMatch[1].trim());
+      continue;
+    }
+  }
+  return result;
+}
+
+function extractTitle(claudeText, fallback) {
+  if (!claudeText) return fallback;
+  const m = claudeText.match(/^#\s+(.+)$/m);
+  return m ? m[1].trim() : fallback;
+}
+
+async function scanAndRenderStatic() {
+  statusEl.textContent = '読み込み中…';
+  try {
+    const manifestRes = await fetch('manifest.json', { cache: 'no-store' });
+    if (!manifestRes.ok) throw new Error('manifest.json が見つかりません');
+    const manifest = await manifestRes.json();
+    const folders = manifest.projects || [];
+
+    const projects = [];
+    for (const folder of folders) {
+      let taskText;
+      try {
+        const r = await fetch(`projects/${encodeURIComponent(folder)}/タスク.md`, { cache: 'no-store' });
+        if (!r.ok) continue;
+        taskText = await r.text();
+      } catch (e) {
+        continue;
+      }
+
+      let claudeText = null;
+      try {
+        const r2 = await fetch(`projects/${encodeURIComponent(folder)}/CLAUDE.md`, { cache: 'no-store' });
+        if (r2.ok) claudeText = await r2.text();
+      } catch (e) {
+        // no CLAUDE.md
+      }
+
+      projects.push({
+        folder,
+        title: extractTitle(claudeText, folder),
+        sections: parseTasks(taskText),
+      });
+    }
+
+    projects.sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+    renderCards(projects);
+
+    const updatedAt = manifest.updatedAt ? new Date(manifest.updatedAt).toLocaleString('ja-JP') : '不明';
+    statusEl.textContent = `最終同期: ${updatedAt}（${projects.length}件のプロジェクト）`;
+  } catch (e) {
+    statusEl.textContent = '読み込みエラー: ' + e.message;
+  }
+}
+
+function renderCards(projects) {
+  cardsEl.innerHTML = '';
+  if (projects.length === 0) {
+    emptyEl.style.display = 'block';
+    emptyEl.innerHTML = 'まだプロジェクトが同期されていません。PCで sync.bat を実行してください。';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  const sectionsDef = [
+    { key: 'inprogress', label: '🔵 進行中', cls: 'sec-blue' },
+    { key: 'next', label: '🟡 次に着手するもの', cls: 'sec-yellow' },
+    { key: 'pending', label: '⚪ 保留・待ち', cls: 'sec-gray' },
+  ];
+
+  for (const p of projects) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    let html = `<h2>${escapeHtml(p.title)}</h2>`;
+    html += `<div class="folder-name">${escapeHtml(p.folder)}</div>`;
+
+    for (const sec of sectionsDef) {
+      const items = p.sections[sec.key] || [];
+      html += `<div class="section ${sec.cls}"><div class="section-title">${sec.label}</div>`;
+      if (items.length === 0) {
+        html += `<div class="no-items">なし</div>`;
+      } else {
+        html += '<ul class="task-list">';
+        for (const item of items) {
+          html += `<li class="${item.done ? 'done' : ''}">`;
+          html += `<span class="check">${item.done ? '✅' : '⬜'}</span>`;
+          html += `<span class="task-text">${mdInlineToHtml(item.text)}`;
+          if (item.sub.length) {
+            html += '<ul class="sub-list">';
+            for (const s of item.sub) {
+              html += `<li>${mdInlineToHtml(s)}</li>`;
+            }
+            html += '</ul>';
+          }
+          html += '</span></li>';
+        }
+        html += '</ul>';
+      }
+      html += '</div>';
+    }
+    card.innerHTML = html;
+    cardsEl.appendChild(card);
+  }
+}
+</script>
+</body>
+</html>
