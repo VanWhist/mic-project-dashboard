@@ -78,12 +78,14 @@ Write-Log ""
 Write-Log "$($foundProjects.Count) 件のプロジェクトを同期しました。"
 
 Push-Location $repoRoot
+$prevEAP = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 try {
     if (Test-Path ".git") {
-        git add -A
+        git add -A 2>&1 | Out-Null
         $status = git status --porcelain
         if ($status) {
-            git commit -m "タスク状況を更新 ($(Get-Date -Format 'yyyy-MM-dd HH:mm'))" | Out-Null
+            git commit -m "タスク状況を更新 ($(Get-Date -Format 'yyyy-MM-dd HH:mm'))" 2>&1 | Out-Null
             $pushOutput = git push 2>&1 | Out-String
             if ($LASTEXITCODE -eq 0) {
                 Write-Log "GitHub にプッシュしました。数分でサイトに反映されます。"
@@ -102,6 +104,7 @@ try {
 } catch {
     Write-Log "エラー: git 操作中に問題が発生しました: $($_.Exception.Message)"
 } finally {
+    $ErrorActionPreference = $prevEAP
     Pop-Location
 }
 
