@@ -6,16 +6,35 @@
 # git add / commit / push まで自動で行います（GitHub Pages に反映されます）。
 #
 # 使い方: このファイルではなく、同じフォルダの「sync.bat」をダブルクリックしてください。
+#
+# -Silent オプション: 自動実行（タスクスケジューラなど）用。完了時の
+# 「Enterキーで閉じる」の待ち受けをスキップし、結果を sync_log.txt に記録します。
+
+param(
+    [switch]$Silent
+)
 
 $ErrorActionPreference = "Stop"
 
 $sourceRoot = "D:\Claude"
 $repoRoot = $PSScriptRoot
 $projectsDir = Join-Path $repoRoot "projects"
+$logFile = Join-Path $repoRoot "sync_log.txt"
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host $Message
+    if ($Silent) {
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        Add-Content -Path $logFile -Value "$timestamp  $Message"
+    }
+}
 
 if (-not (Test-Path $sourceRoot)) {
-    Write-Host "エラー: $sourceRoot が見つかりません。"
-    Read-Host "Enterキーで終了"
+    Write-Log "エラー: $sourceRoot が見つかりません。"
+    if (-not $Silent) {
+        Read-Host "Enterキーで終了"
+    }
     exit 1
 }
 
@@ -41,7 +60,7 @@ Get-ChildItem -Path $sourceRoot -Directory | ForEach-Object {
         }
 
         $foundProjects += $folderName
-        Write-Host "同期: $folderName"
+        Write-Log "同期: $folderName"
     }
 }
 
@@ -49,7 +68,7 @@ Get-ChildItem -Path $sourceRoot -Directory | ForEach-Object {
 Get-ChildItem -Path $projectsDir -Directory | ForEach-Object {
     if ($foundProjects -notcontains $_.Name) {
         Remove-Item -Path $_.FullName -Recurse -Force
-        Write-Host "削除: $($_.Name)（元フォルダにタスク.mdが見つからないため）"
+        Write-Log "削除: $($_.Name)（元フォルダにタスク.mdが見つからないため）"
     }
 }
 
@@ -60,8 +79,8 @@ $manifestObj = [ordered]@{
 $manifestJson = $manifestObj | ConvertTo-Json
 Set-Content -Path (Join-Path $repoRoot "manifest.json") -Value $manifestJson -Encoding UTF8
 
-Write-Host ""
-Write-Host "$($foundProjects.Count) 件のプロジェクトを同期しました。"
+Write-Log ""
+Write-Log "$($foundProjects.Count) 件のプロジェクトを同期しました。"
 
 Push-Location $repoRoot
 try {
@@ -71,18 +90,20 @@ try {
         if ($status) {
             git commit -m "タスク状況を更新 ($(Get-Date -Format 'yyyy-MM-dd HH:mm'))" | Out-Null
             git push
-            Write-Host "GitHub にプッシュしました。数分でサイトに反映されます。"
+            Write-Log "GitHub にプッシュしました。数分でサイトに反映されます。"
         } else {
-            Write-Host "前回から変更はありませんでした。"
+            Write-Log "前回から変更はありませんでした。"
         }
     } else {
-        Write-Host ""
-        Write-Host "※このフォルダはまだ git リポジトリとして設定されていません。"
-        Write-Host "  README.md の手順に従って、最初に1度だけ GitHub への接続設定を行ってください。"
+        Write-Log ""
+        Write-Log "※このフォルダはまだ git リポジトリとして設定されていません。"
+        Write-Log "  README.md の手順に従って、最初に1度だけ GitHub への接続設定を行ってください。"
     }
 } finally {
     Pop-Location
 }
 
-Write-Host ""
-Read-Host "完了しました。Enterキーでウィンドウを閉じます"
+Write-Log ""
+if (-not $Silent) {
+    Read-Host "完了しました。Enterキーでウィンドウを閉じます"
+}
