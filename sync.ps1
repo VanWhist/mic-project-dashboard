@@ -6,9 +6,6 @@
 # git add / commit / push まで自動で行います（GitHub Pages に反映されます）。
 #
 # 使い方: このファイルではなく、同じフォルダの「sync.bat」をダブルクリックしてください。
-#
-# -Silent オプション: 自動実行（タスクスケジューラなど）用。完了時の
-# 「Enterキーで閉じる」の待ち受けをスキップし、結果を sync_log.txt に記録します。
 
 param(
     [switch]$Silent
@@ -32,9 +29,7 @@ function Write-Log {
 
 if (-not (Test-Path $sourceRoot)) {
     Write-Log "エラー: $sourceRoot が見つかりません。"
-    if (-not $Silent) {
-        Read-Host "Enterキーで終了"
-    }
+    if (-not $Silent) { Read-Host "Enterキーで終了" }
     exit 1
 }
 
@@ -89,8 +84,13 @@ try {
         $status = git status --porcelain
         if ($status) {
             git commit -m "タスク状況を更新 ($(Get-Date -Format 'yyyy-MM-dd HH:mm'))" | Out-Null
-            git push
-            Write-Log "GitHub にプッシュしました。数分でサイトに反映されます。"
+            $pushOutput = git push 2>&1 | Out-String
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "GitHub にプッシュしました。数分でサイトに反映されます。"
+            } else {
+                Write-Log "エラー: GitHub へのプッシュに失敗しました（変更はこのパソコンには保存されています）。"
+                Write-Log "git push の出力: $pushOutput"
+            }
         } else {
             Write-Log "前回から変更はありませんでした。"
         }
@@ -99,6 +99,8 @@ try {
         Write-Log "※このフォルダはまだ git リポジトリとして設定されていません。"
         Write-Log "  README.md の手順に従って、最初に1度だけ GitHub への接続設定を行ってください。"
     }
+} catch {
+    Write-Log "エラー: git 操作中に問題が発生しました: $($_.Exception.Message)"
 } finally {
     Pop-Location
 }
