@@ -12,6 +12,10 @@ MIC選手育成で運用している「選手カルテ」の仕組みを簡略�
 - シーズン目標・マンダラチャートは、MICの実運用（Googleフォーム＋選手ごとの個別マンダラ
   スプレッドシート）をそのままコピー・adaptする方式で実装（2026-07-25）。新しい選手が増えたら
   フォームの選手名選択肢に追加し、マンダラスプレッドシートをコピーして名簿にURLを追加する運用。
+- 大会振り返りフォームは、MICを流用せずチャッピー（ChatGPT）と相談してトランポリン競技特化で
+  新規設計（2026-07-25）。瑛斗・颯斗共通の1フォーム（回答時に名前を選択）方式、PDCA型の設問構成。
+- 今後、中長期目標設定シート／短期目標／大会振り返り／次の大会の目標シートを連動させる構想が
+  あり、実装前にチャッピーとClaudeの意見をVanさんに報告・確認する予定（未着手、2026-07-25時点）。
 
 ## 公開URL
 - コーチ用一覧（トークンなし）: https://vanwhist.github.io/trampo-karte/karte/
@@ -26,6 +30,9 @@ MIC選手育成で運用している「選手カルテ」の仕組みを簡略�
 - 上記フォームの回答スプレッドシート: https://docs.google.com/spreadsheets/d/1Xezq36_rQNOXxralFgeWdJTL7bpA_wLtFqSFCgBt3kc/edit
 - マンダラチャート（瑛斗）個別スプレッドシート: https://docs.google.com/spreadsheets/d/1qw0mMZWeFKfbk0un40AsP8FLau6W81Dk7Sc19VKkaqg/edit
 - マンダラチャート（颯斗）個別スプレッドシート: https://docs.google.com/spreadsheets/d/1KW7uy7PPisa-yiixmDKIQ2eQop3Tz0zFErKEM87asD0/edit
+- 大会振り返り（Googleフォーム、チャッピーと相談して新規設計）: https://docs.google.com/forms/d/1jIWlx-w9tAXe6cdfpayB6DPT8sMx9bx-agrML-0c0XM/edit
+- 上記フォームの回答用URL（公開リンク）: https://docs.google.com/forms/d/e/1FAIpQLSfaPnJcaxOli7M3hlmYKpFDDJ444fdwfHmL7okReWJEiHHQ-A/viewform
+- 大会振り返りの回答スプレッドシート: https://docs.google.com/spreadsheets/d/1TjKIxJ6rMGokRVKnNcxGC6zAzpFbIxpSVhffqDplyKQ/edit
 - Notionプロジェクトページ: https://app.notion.com/p/3a7710fca1f481ea8e37d93bdb67030c
 - Notionアプリ・アカウント管理ページ: https://app.notion.com/p/3a7710fca1f4814f998ae85966c34595
 
