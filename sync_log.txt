@@ -440,3 +440,23 @@ com
 2026-07-26 10:23:47  同期: 瑛斗と颯斗
 2026-07-26 10:23:48  
 2026-07-26 10:23:48  7 件のプロジェクトを同期しました。
+2026-07-26 10:23:49  エラー: GitHub へのプッシュに失敗しました（変更はこのパソコンには保存されています）。
+2026-07-26 10:23:49  git push の出力: git : fatal: unable to access 'https://github.com/VanWhist/mic-project-dashboard.git/': Could not resolve host: github.
+com
+発生場所 D:\Claude\プロジェクト横断ダッシュボード\repo\sync.ps1:89 文字:27
++             $pushOutput = git push 2>&1 | Out-String
++                           ~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (fatal: unable t...ost: github.com:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+2026-07-26 10:23:49  
+2026-07-26 10:39:27  同期: MICホームページ
+2026-07-26 10:39:27  同期: MIC選手育成
+2026-07-26 10:39:27  同期: NTエアlog
+2026-07-26 10:39:27  同期: toto教室自動化システム
+2026-07-26 10:39:27  同期: カスタムアプリ
+2026-07-26 10:39:27  同期: プロジェクト横断ダッシュボード
+2026-07-26 10:39:27  同期: 瑛斗と颯斗
+2026-07-26 10:39:27  
+2026-07-26 10:39:27  7 件のプロジェクトを同期しました。
