@@ -27,6 +27,7 @@ MIC選手育成で運用している「選手カルテ」の仕組みを簡略�
   「大会前の目標」フォームに「大会とは別に、今月取り組みたいことはありますか？」
   「そのために何をしますか？」の2問を追加し、大会目標だけでは拾いにくい育成課題
   （新技習得・体力・生活習慣など）を補足できるようにした。
+  ※この2問は2026-08-01の「大会目標・準備シート」への改修で削除済み（後述）。
 - 大会振り返りフォームは、MICを流用せずチャッピー（ChatGPT）と相談してトランポリン競技特化で
   新規設計（2026-07-25）。瑛斗・颯斗共通の1フォーム（回答時に名前を選択）方式、PDCA型の設問構成。
 - 4シート連動（中長期目標／短期目標／大会振り返り／次の大会の目標シート）は、チャッピー提案の
@@ -44,6 +45,30 @@ MIC選手育成で運用している「選手カルテ」の仕組みを簡略�
   今の課題）が回答済みなのに画面に一切表示されていなかった表示漏れを発見・修正（2026-07-26）。
   Code.gsに抽出ロジックを追加し、karte/index.htmlに新しい「競技について」カードを新設。
   Apps Scriptはバージョン4として再デプロイ済み。
+- 「大会前の目標」フォームを「大会目標・準備シート」に全面改修（2026-08-01）。回答0件のうちに
+  Apps Script（FormApp）で全設問を削除して作り直した。目的の違う3種類の設問（数週間前の目標設定／
+  当日朝の心構え／月次目標）が混在していた状態を解消し、大会目標そのものを記録する設問を新設。
+  大会振り返りフォームが自己採点を「結果への満足度」「演技内容への満足度」の二軸に分けているのに
+  合わせ、大会前も「結果として目指したいこと」「演技の内容としてできるようにしたいこと」を
+  別々の設問にした（瑛斗が実施点E決勝3位でも総得点だけを見て演技内容を30点と自己採点した実例への対策。
+  この2問は必ず分けたまま維持すること）。削除した6問＝今日一番意識したいこと／成功したら何点／
+  緊張の度合い／試合前に自分へひとこと／今月取り組みたいこと／そのために何をしますか。
+  セクション区切りはページ区切りではなく見出し項目（addSectionHeaderItem）で、1画面スクロール構成。
+  設問8の文言に「怖い」「恐怖」を入れないのは意図的（瑛斗が恐怖心を自発的に書くか自体を観察するため）。
+  設問7を8より先に置くのも意図的（できていることを先に思い出させ、自己評価が過度に厳しくなるのを防ぐ）。
+  設問14のヒント文から技術以外（メンタル・生活）の例を削らないこと。
+  実行スクリプトは apps-script/大会目標フォーム改修.gs に保存済み。
+- 新しい回答スプレッドシートのタイムスタンプ列見出しが「タイムスタンプ」ではなく英語の「Timestamp」に
+  なっている（SpreadsheetApp.create()由来）。シート側を直すのではなく、Code.gs側で両方の表記を
+  受け入れる実装にする方針（2026-08-01決定）。英語表記の決定要因が不確実で、シート再作成時に
+  再発しうるため。
+- 大会目標・準備シートの回答は、大会振り返りの回答スプレッドシートに統合せず別ファイルにしている
+  （2026-08-01、意図的）。大会振り返り側には手維持の「大会公式リザルト」タブがあり、2026-07-27に
+  フォーム送信が手貼り行を押し下げる不具合を実際に踏んでいるため、2つ目のフォームのタブを
+  同居させない。
+- 大会振り返りフォームの「大会前に決めていた目標は、どのくらいできた？」を結果／演技内容の二軸に
+  分けるかは保留（2026-08-01）。大会目標・準備シートに1回回答が入り、設問4と設問5が実質的に
+  別の内容になっているかを見てから判断する。それまで変更しない。
 
 ## 公開URL
 - コーチ用一覧（トークンなし）: https://vanwhist.github.io/trampo-karte/karte/
@@ -64,9 +89,15 @@ MIC選手育成で運用している「選手カルテ」の仕組みを簡略�
 - 短期目標（月次）（Googleフォーム）: https://docs.google.com/forms/d/1wsWHNnfkVXUeNKgzvugsdx66mZWSVlCCBDKKBwnwIlU/edit
 - 上記フォームの回答用URL（公開リンク）: https://docs.google.com/forms/d/e/1FAIpQLSdHaaKZbi-bEHQMSBuZaELo5_ckUF2DQLtBCiu7bReWAUhXcg/viewform
 - 短期目標（月次）の回答スプレッドシート: https://docs.google.com/spreadsheets/d/1lk4IpGZ4Ve_MYyDvBX8n7qi0TQKeg33wZ7RmYdNZMNg/edit
-- 大会前の目標（Googleフォーム）: https://docs.google.com/forms/d/1t_RcOqa3qJNyeU9sKY0kCYv0gV9n1huUVvGd-urE77c/edit
-- 上記フォームの回答用URL（公開リンク）: https://docs.google.com/forms/d/e/1FAIpQLSfuBZ_W7-YT-dB6FhsZIasEMFpWh9Kq9obIGLxolwSf0hOalg/viewform
-- 大会前の目標の回答スプレッドシート: https://docs.google.com/spreadsheets/d/15sq-EO41KCYYpkfYorOtKqcUL84JPowTNYD0oeAUxcw/edit
+- 大会目標・準備シート（Googleフォーム。旧「大会前の目標」を2026-08-01に全面改修。フォームIDは不変）:
+  https://docs.google.com/forms/d/1t_RcOqa3qJNyeU9sKY0kCYv0gV9n1huUVvGd-urE77c/edit
+- 上記フォームの回答用URL（公開リンク。改修前と同一）: https://docs.google.com/forms/d/e/1FAIpQLSfuBZ_W7-YT-dB6FhsZIasEMFpWh9Kq9obIGLxolwSf0hOalg/viewform
+- 大会目標・準備シートの回答スプレッドシート（2026-08-01に新規作成）:
+  https://docs.google.com/spreadsheets/d/1nvVuA6-Ifwb2RfUzTcVEAcpMlpdVJAOzaiai1sBCHQk/edit
+- 旧「大会前の目標（回答）」スプレッドシート（2026-08-01にリンク解除済み・未削除。中身確認後にVanさんが手で削除予定）:
+  https://docs.google.com/spreadsheets/d/15sq-EO41KCYYpkfYorOtKqcUL84JPowTNYD0oeAUxcw/edit
+- 【旧】大会前の目標_20260801バックアップ（改修前のフォーム構成の複製。回答データは含まない）:
+  https://docs.google.com/forms/d/1AglK-Q6LQpUkwWssvBVPWsQiG-fAdv9wgrrUnxOLhyo/edit
 - Notionプロジェクトページ: https://app.notion.com/p/3a7710fca1f481ea8e37d93bdb67030c
 - Notionアプリ・アカウント管理ページ: https://app.notion.com/p/3a7710fca1f4814f998ae85966c34595
 
