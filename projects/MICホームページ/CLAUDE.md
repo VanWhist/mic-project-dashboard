@@ -38,6 +38,10 @@
 
 `mic-site-mockup/` では `core.autocrlf=false` を設定済み（CRLF変換で全行差分が出るのを防ぐため）。
 
+**GitHub Pages の落とし穴**：Pages は既定で Jekyll を通すため、**`_` で始まるファイルは公開されない**（リポジトリにあっても404）。
+2026/8/14 に `assets/athletes/_placeholder.jpg` で実際に発生し、`.nojekyll` を置いて解消した。
+ローカルの `file://` では正常に見えるため目視では気づけない。**push 後は必ず公開URLで実物を確認すること。**
+
 ## 主なファイル
 - トップページ本体：`mic-site-mockup/index.html`
 - 選手データ：`mic-site-mockup/data/athletes.js`（`AP_ATHLETES`。照合キーはローマ字の `id`）※段階1で作成
