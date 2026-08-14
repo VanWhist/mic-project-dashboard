@@ -24,9 +24,26 @@
 ## 作業ルール
 - **ファイルの削除は必ず事前に確認を取ること。** 上書きも同様に、内容を確認してから行う。
 
+## ⚠️ サイト本体は clone した `mic-site-mockup/` だけ（2026/8/14〜）
+
+2026/8/14 に GitHub からの clone へ移行した。**編集してよいのは `mic-site-mockup/` の中だけ。**
+
+- `mic-site-mockup/` … `VanWhist/mic-site-mockup` の clone。**唯一の正**。ここだけが GitHub Pages に公開される
+- `prototype-site/` … 移行前のローカルコピー。**参照も編集もしない。** 8/9時点で止まっており、内容はすべて
+  リポジトリ履歴に含まれていることを確認済み（`未公開の変更一覧_20260814.md`）。削除はVan様の指示があるまで行わない
+- ルート直下の `index.html` `full-calendar.html` … 7/28で止まった旧コピー。**参照しない**
+
+移行前は Chrome から GitHub の Web UI へ手動アップロードしていたため、公開側の変更がローカルへ戻らず
+一方通行になっていた。**再発させないため、サイトの変更は必ず git 経由で行うこと。**
+
+`mic-site-mockup/` では `core.autocrlf=false` を設定済み（CRLF変換で全行差分が出るのを防ぐため）。
+
 ## 主なファイル
-- トップページ本体：`prototype-site/index.html`
-- 引き継ぎメモ（最新）：`handoff_MICホームページリニューアル_20260725_v16.md`
+- トップページ本体：`mic-site-mockup/index.html`
+- 選手データ：`mic-site-mockup/data/athletes.js`（`AP_ATHLETES`。照合キーはローマ字の `id`）※段階1で作成
+- 反映用CLI：`tools/publish_photos.py`（**リポジトリの外**。`.env` も同様）※段階2以降で作成
+- 引き継ぎメモ（最新）：`handoff_選手セルフアップロードアプリ_20260812.md`
+- 実装プロンプト（現行）：`ClaudeCode用プロンプト_選手セルフアップロードアプリ第1段階_v2_20260812_1.md`
 - 現在のタスク：`タスク.md`
 - 作業ログ：`作業ログ.md`
 - 選手セルフアップロードアプリ仕様書（最新）：`選手セルフアップロードアプリ_仕様書v2_20260728.md`
