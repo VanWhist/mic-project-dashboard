@@ -98,6 +98,13 @@ MIC選手育成で運用している「選手カルテ」の仕組みを簡略�
   https://docs.google.com/spreadsheets/d/15sq-EO41KCYYpkfYorOtKqcUL84JPowTNYD0oeAUxcw/edit
 - 【旧】大会前の目標_20260801バックアップ（改修前のフォーム構成の複製。回答データは含まない）:
   https://docs.google.com/forms/d/1AglK-Q6LQpUkwWssvBVPWsQiG-fAdv9wgrrUnxOLhyo/edit
+- 西日本選手権まで3日 練習を決めるシート（Googleフォーム。2026-08-31作成の単発フォーム。全7問）:
+  https://docs.google.com/forms/d/1T7dLb44jmZdTmPUx8Y26g5_yBXHzktDNuwd0-cTEOnI/edit
+- 上記フォームの回答用URL（公開リンク。瑛斗に渡す）: https://docs.google.com/forms/d/e/1FAIpQLSdbtD7WoDQRbOOkobV92KWNSSrYagmN-M4xIP6hjYRPIcc53Q/viewform
+- 上記フォームの回答スプレッドシート: https://docs.google.com/spreadsheets/d/1ko4gs2LI9wWiwqGPT8T9awzdFqLZsgolclbRjwQS_1M/edit
+  ※「大会目標・準備シート」とは別物。カルテ（karte/index.html・Code.gs）とは連携していない単体フォーム。
+  ※生成スクリプト: apps-script/練習シート作成_20260831.gs（createRenshuSheet()。作り直しはこれを編集して再実行）
+  ※9/6の西日本選手権までの一回限りの用途。以降も使うなら常設化を別途検討する。
 - Notionプロジェクトページ: https://app.notion.com/p/3a7710fca1f481ea8e37d93bdb67030c
 - Notionアプリ・アカウント管理ページ: https://app.notion.com/p/3a7710fca1f4814f998ae85966c34595
 
