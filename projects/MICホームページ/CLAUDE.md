@@ -24,6 +24,23 @@
 ## 作業ルール
 - **ファイルの削除は必ず事前に確認を取ること。** 上書きも同様に、内容を確認してから行う。
 
+### git の操作（2026/9/1 追加）
+- **次の操作は必ず事前に確認を取ること。** 実行後に取り消せないため。
+  - `git reset --hard` ／ `git clean` ／ `git checkout -- .` ／ `git push -f` ／ `git branch -D`
+- **`origin` に合わせるだけなら `git pull --ff-only` を使う。** `reset --hard` は使わない。
+- `main` は保護ブランチ（PR必須・strict・force push禁止）。**保護を外す選択肢は無い。**
+- 手順は必ずこの順で。**確認が済むまでマージしない。**
+  1. 最新の `origin/main` から `work/<用途>-<YYYYMMDD>` を切る
+  2. commit
+  3. push して PR
+  4. guard の通過を確認
+  5. 変更ファイルと行数を報告
+- **マージは本番デプロイを起動する。** 必ずVan様の確認を取ってから。
+
+> 2026/9/1、`main` を `origin` に合わせる際に `git reset --hard origin/main` を確認なしに実行した。
+> `main` 側にローカルの変更が無かったため実害は出なかったが、あった場合は戻せなかった。
+> 自己申告があったので分かった。**同じ操作を繰り返さないこと。**
+
 ## ⚠️ サイト本体は clone した `mic-site-mockup/` だけ（2026/8/14〜）
 
 2026/8/14 に GitHub からの clone へ移行した。**編集してよいのは `mic-site-mockup/` の中だけ。**
@@ -46,7 +63,8 @@
 - トップページ本体：`mic-site-mockup/index.html`
 - 選手データ：`mic-site-mockup/data/athletes.js`（`AP_ATHLETES`。照合キーはローマ字の `id`）※段階1で作成
 - 反映用CLI：`tools/publish_photos.py`（**リポジトリの外**。`.env` も同様）※段階2以降で作成
-- 引き継ぎメモ（最新）：`handoff_選手セルフアップロードアプリ_20260812.md`
+- 引き継ぎメモ（最新）：`handoff_MICホームページリニューアル_20260901_v12.md`
+  ※ 新しいチャットは、作業を始める前にこれを読むこと。複数あるときは日付が最新のもの
 - 実装プロンプト（現行）：`ClaudeCode用プロンプト_選手セルフアップロードアプリ第1段階_v2_20260812.md`（改訂5。**Downloads内の `_1` `_2` `_3` は旧版なので見ないこと**）
 - Googleアカウント：アプリ関連は **`mogul.mic@gmail.com`** で作る（2026/8/14決定）。カレンダーAPI・選手カルテ系は `yuyumogul@gmail.com` 側
 - 現在のタスク：`タスク.md`
